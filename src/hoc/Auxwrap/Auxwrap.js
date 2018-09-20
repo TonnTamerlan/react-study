@@ -1,3 +1,3 @@
-const auxwrap = (props) => props.children;
+const Auxwrap = (props) => props.children;
 
-export default auxwrap;
+export default Auxwrap;
