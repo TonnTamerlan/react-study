@@ -1,4 +1,6 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
+
 import axios from '../../../axios-orders';
 
 import classes from './ContactData.css';
@@ -94,19 +96,19 @@ class ContactData extends Component {
         formIsValid: false
     }
 
-    checkValidity(value, rules){
+    checkValidity(value, rules) {
 
         let isValid = true;
 
-        if(rules.required){
+        if (rules.required) {
             isValid = value.trim() !== '' && isValid;
         }
 
-        if(rules.minLength){
+        if (rules.minLength) {
             isValid = value.length >= rules.minLength && isValid;
         }
 
-        if(rules.maxLength){
+        if (rules.maxLength) {
             isValid = value.length <= rules.maxLength && isValid;
         }
 
@@ -116,7 +118,7 @@ class ContactData extends Component {
     orderHandler = (event) => {
         event.preventDefault();
         const formData = {};
-        for (let formIdentifier in this.state.orderForm){
+        for (let formIdentifier in this.state.orderForm) {
             formData[formIdentifier] = this.state.orderForm[formIdentifier];
         }
         const order = {
@@ -137,7 +139,7 @@ class ContactData extends Component {
         const updatedOrderForm = {
             ...this.state.orderForm
         };
-        const updatedFormElement = { 
+        const updatedFormElement = {
             ...updatedOrderForm[inputIdentifier]
         };
         updatedFormElement.value = event.target.value;
@@ -147,27 +149,25 @@ class ContactData extends Component {
 
         let formIsValid = true;
 
-        for (let identifier in updatedOrderForm){
-            if(!updatedOrderForm[identifier].valid){
+        for (let identifier in updatedOrderForm) {
+            if (!updatedOrderForm[identifier].valid) {
                 formIsValid = false;
             }
         }
 
-        console.log('Form valid', formIsValid);
-
-        this.setState({orderForm: updatedOrderForm, formIsValid: formIsValid}); 
+        this.setState({ orderForm: updatedOrderForm, formIsValid: formIsValid });
     }
 
-    focusHandler(inputIdentifier){
+    focusHandler(inputIdentifier) {
         const updatedOrderForm = {
             ...this.state.orderForm
         };
-        const updatedFormElement = { 
+        const updatedFormElement = {
             ...updatedOrderForm[inputIdentifier]
         };
         updatedFormElement.touched = true;
         updatedOrderForm[inputIdentifier] = updatedFormElement;
-        this.setState({orderForm: updatedOrderForm}); 
+        this.setState({ orderForm: updatedOrderForm });
     }
 
     render() {
@@ -183,7 +183,7 @@ class ContactData extends Component {
                 elementConfig={orderForm[form].elementConfig}
                 value={orderForm[form].value}
                 touched={orderForm[form].touched}
-                focused={()=>this.focusHandler(form)}
+                focused={() => this.focusHandler(form)}
                 changed={(event) => this.inputChangedHandler(event, form)} />)
         }
 
@@ -206,4 +206,13 @@ class ContactData extends Component {
     }
 }
 
-export default ContactData;
+const mapStateToProps = state => {
+    return {
+        ingredients: state.ingredients,
+        price: state.totalPrice
+    }
+};
+
+const mapDispatchToProps = null;
+
+export default connect(mapStateToProps, mapDispatchToProps)(ContactData);
