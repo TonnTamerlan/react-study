@@ -5,9 +5,12 @@ import axios from '../../../axios-orders';
 
 import classes from './ContactData.css';
 
+import { purchaseBurger } from '../../../store/actions/'
+
 import Button from '../../../components/UI/Button/Button';
 import Spinner from '../../../components/UI/Spinner/Spinner';
 import Input from '../../../components/UI/Input/Input';
+import withErrorHandler from '../../../hoc/withErrorHandler/withErrorHandler';
 
 class ContactData extends Component {
 
@@ -88,8 +91,9 @@ class ContactData extends Component {
                         { value: 'cheapest', displayValue: 'Cheapest' }
                     ]
                 },
-                value: '',
-                validation: {}
+                value: 'fastest',
+                validation: {},
+                valid: true
             }
         },
         loading: false,
@@ -119,20 +123,15 @@ class ContactData extends Component {
         event.preventDefault();
         const formData = {};
         for (let formIdentifier in this.state.orderForm) {
-            formData[formIdentifier] = this.state.orderForm[formIdentifier];
+            formData[formIdentifier] = this.state.orderForm[formIdentifier].value;
         }
         const order = {
             ingredients: this.props.ingredients,
             price: this.props.price.toFixed(2),
             orderData: formData
         }
-        this.setState({ loading: true });
-        axios.post('/orders.json', order)
-            .then(response => {
-                this.setState({ loading: false });
-                this.props.history.push('/');
-            })
-            .catch(error => this.setState({ loading: false }));
+        console.log('Order data', order);
+        this.props.onOrderBurger(order);
     }
 
     inputChangedHandler = (event, inputIdentifier) => {
@@ -193,7 +192,7 @@ class ContactData extends Component {
                 <Button btnType='Success' disabled={!this.state.formIsValid}>ORDER</Button>
             </form>
         );
-        if (this.state.loading) {
+        if (this.props.loading) {
             form = (<Spinner />);
         }
 
@@ -208,11 +207,17 @@ class ContactData extends Component {
 
 const mapStateToProps = state => {
     return {
-        ingredients: state.ingredients,
-        price: state.totalPrice
+        ingredients: state.burgerBuilder.ingredients,
+        price: state.burgerBuilder.totalPrice,
+        loading: state.order.loading
     }
 };
 
-const mapDispatchToProps = null;
+const mapDispatchToProps = dispatch => {
+    return { 
 
-export default connect(mapStateToProps, mapDispatchToProps)(ContactData);
+        onOrderBurger: (orderData) => dispatch(purchaseBurger(orderData)) 
+    }
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(withErrorHandler(ContactData, axios));
