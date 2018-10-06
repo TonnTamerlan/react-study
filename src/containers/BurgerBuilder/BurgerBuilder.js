@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import axios from '../../axios-orders';
 
-import {addIngredient, removeIngredient, initIngredient, purchaseInit} from '../../store/actions/';
+import { addIngredient, removeIngredient, initIngredient, purchaseInit, setRedirectPath } from '../../store/actions/';
 
 import Auxwrap from '../../hoc/Auxwrap/Auxwrap'
 import Burger from '../../components/Burger/Burger';
@@ -20,7 +20,6 @@ class BurgerBuilder extends Component {
 
     componentDidMount() {
         this.props.onInitIngredients();
-        console.log('BurgerBuilder props', this.props);
     }
 
     updatePurchaseState = (ingredients) => {
@@ -29,7 +28,12 @@ class BurgerBuilder extends Component {
     }
 
     purchaseHandler = () => {
-        this.setState({ purchasing: true });
+        if (!this.props.isAutheticated) {
+            this.props.onSetRedirectPath('/checkout');
+            this.props.history.push('/auth');
+        } else {
+            this.setState({ purchasing: true });
+        }
     }
 
     puschaseCancelHandler = () => {
@@ -63,6 +67,7 @@ class BurgerBuilder extends Component {
                         price={this.props.totalPrice}
                         isPurchasable={(this.updatePurchaseState(this.props.ings))}
                         purchase={this.purchaseHandler}
+                        isAuth={this.props.isAutheticated}
                     />
                 </Auxwrap>);
             orderSummary = (
@@ -91,7 +96,9 @@ const mapStateToProps = state => {
     return {
         ings: state.burgerBuilder.ingredients,
         totalPrice: state.burgerBuilder.totalPrice,
-        error: state.burgerBuilder.error
+        error: state.burgerBuilder.error,
+        isAutheticated: state.auth.token !== null,
+        building: state.burgerBuilder.building
     }
 }
 
@@ -100,7 +107,8 @@ const mapDispatchToProps = dispatch => {
         onIngredientAdded: (ingName) => dispatch(addIngredient(ingName)),
         onIngredientRemoved: (ingName) => dispatch(removeIngredient(ingName)),
         onInitIngredients: () => dispatch(initIngredient()),
-        onInitPurchase: () => dispatch(purchaseInit())
+        onInitPurchase: () => dispatch(purchaseInit()),
+        onSetRedirectPath: (path) => dispatch(setRedirectPath(path))
     }
 }
 
